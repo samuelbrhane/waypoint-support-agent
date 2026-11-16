@@ -40,6 +40,7 @@ export async function runAgentTurn({ visitorId, conversationId, onStep }: TurnOp
 
   const pendingActionIds: string[] = [];
   let ticketNumber: string | null = null;
+  let toolsSucceeded = 0;
   let text = FALLBACK_TEXT;
 
   for (let call = 1; call <= MAX_MODEL_CALLS; call++) {
@@ -88,6 +89,7 @@ export async function runAgentTurn({ visitorId, conversationId, onStep }: TurnOp
       const result = await executeToolCall(functionCall, context, logger);
 
       if (result.ok) {
+        toolsSucceeded += 1;
         const data = result.data as Record<string, unknown>;
 
         if (data.status === "awaiting_confirmation") {
@@ -113,11 +115,12 @@ export async function runAgentTurn({ visitorId, conversationId, onStep }: TurnOp
     }
   }
 
+  // Escalated, waiting for confirmation, still needs information, or resolved
   const outcome: ConversationOutcome = ticketNumber
     ? "escalated"
     : pendingActionIds.length > 0
       ? "open"
-      : text.trim().endsWith("?")
+      : toolsSucceeded === 0
         ? "clarification"
         : "resolved";
 

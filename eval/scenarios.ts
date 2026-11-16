@@ -53,7 +53,11 @@ export const SCENARIOS: Scenario[] = [
   {
     name: "Refuses a refund on a non-refundable fare",
     messages: ["I want a refund for booking VM5190."],
-    expect: { forbiddenTools: ["request_refund"], card: "none", replyMentions: ["non-refundable", "not refundable"] },
+    expect: {
+      forbiddenTools: ["request_refund"],
+      card: "none",
+      replyMentions: ["non-refundable", "not refundable", "isn't refundable", "can't be refunded"],
+    },
   },
   {
     name: "Hands a missed connection to a person",

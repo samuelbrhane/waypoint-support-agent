@@ -18,7 +18,8 @@ function checkScenario(
   facts: { tools: string[]; cards: string[]; ticket: boolean; retry: boolean; reply: string; outcome: string },
 ): Check[] {
   const checks: Check[] = [];
-  const reply = facts.reply.toLowerCase();
+  // Curly and straight apostrophes count as the same, so "couldn’t" matches "couldn't"
+  const reply = facts.reply.toLowerCase().replace(/[‘’]/g, "'");
 
   for (const tool of expect.tools ?? []) {
     checks.push({ name: `uses ${tool}`, passed: facts.tools.includes(tool), detail: `used ${facts.tools.join(", ") || "none"}` });

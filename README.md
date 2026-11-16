@@ -8,7 +8,9 @@ An AI support agent for Velmora Air. It looks up bookings, checks fare rules, pr
 
 ## Demo
 
-[Watch the recording](screenshots/waypoint-demo.mp4) of the home page, three support chats and the logs.
+The recording opens on the home page, runs three support chats, then reviews them on the Logs page.
+
+https://github.com/user-attachments/assets/PASTE-YOUR-VIDEO-ID
 
 | Chat with live trace | Conversation logs |
 |---|---|
@@ -39,7 +41,7 @@ Each visitor gets a private copy of six sample bookings, so anyone can try every
 
 ```mermaid
 flowchart LR
-    U[Customer] -->|message| C[/api/chat]
+    U[Customer] -->|message| C["/api/chat"]
     C --> L[Agent loop]
     L <-->|Responses API| O[OpenAI]
     L --> T[Tools]
@@ -47,7 +49,7 @@ flowchart LR
     T --> D[(Postgres)]
     T -->|change requested| P[Pending action]
     P -->|card| U
-    U -->|Confirm| A[/api/actions/id]
+    U -->|Confirm| A["/api/actions/id"]
     A --> D
     L -->|each step| S[Agent steps log]
     C -->|NDJSON stream| U

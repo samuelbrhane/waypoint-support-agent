@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ReplayRack } from "./replay-rack";
+import { AgentFlow } from "./agent-flow";
 import { RouteMap } from "./route-map";
 
 export function Hero() {
@@ -33,7 +33,7 @@ export function Hero() {
             freely.
           </p>
         </div>
-        <ReplayRack />
+        <AgentFlow />
       </div>
     </section>
   );

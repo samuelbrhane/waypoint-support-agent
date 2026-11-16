@@ -55,7 +55,11 @@ export function DemoApp() {
           refreshKey={refreshKey}
         />
         <div className="h-[42dvh] min-h-0 border-t border-line lg:h-auto lg:border-t-0">
-          <TracePanel steps={chat.steps} working={working} />
+          <TracePanel
+            steps={chat.steps}
+            questions={chat.messages.filter((m) => m.role === "user").map((m) => m.content)}
+            working={working}
+          />
         </div>
       </main>
     </div>

@@ -51,11 +51,11 @@ async function callModel(input: ResponseInputItem[], onText?: (delta: string) =>
   });
 
   let finalResponse: OpenAI.Responses.Response | null = null;
-  let wroteText = false;
+  let streamedText = "";
 
   for await (const event of stream) {
     if (event.type === "response.output_text.delta") {
-      wroteText = true;
+      streamedText += event.delta;
       onText?.(event.delta);
     } else if (event.type === "response.completed") {
       finalResponse = event.response;
@@ -67,7 +67,10 @@ async function callModel(input: ResponseInputItem[], onText?: (delta: string) =>
   if (!finalResponse) {
     throw new Error("The model response did not complete.");
   }
-  return { response: finalResponse, wroteText };
+
+  // Prefer the text in the final response, and fall back to what was streamed
+  const text = outputText(finalResponse).trim() || streamedText.trim();
+  return { response: finalResponse, text, wroteText: streamedText.length > 0 };
 }
 
 /** Answer the newest customer message: call the model, run its tools, repeat until it replies. */
@@ -88,15 +91,18 @@ export async function runAgentTurn({
   const pendingActionIds: string[] = [];
   let ticketNumber: string | null = null;
   let toolsSucceeded = 0;
+  let emptyReplies = 0;
   let text = FALLBACK_TEXT;
 
   for (let call = 1; call <= MAX_MODEL_CALLS; call++) {
     let response: OpenAI.Responses.Response;
+    let replyText: string;
     let wroteText: boolean;
 
     try {
       const measured = await measure(() => callModel(input, onText));
       response = measured.result.response;
+      replyText = measured.result.text;
       wroteText = measured.result.wroteText;
 
       const functionCalls = response.output.filter((item) => item.type === "function_call");
@@ -121,8 +127,16 @@ export async function runAgentTurn({
 
     // No tools requested: this is the final reply
     if (functionCalls.length === 0) {
-      text = outputText(response).trim() || FALLBACK_TEXT;
-      break;
+      if (replyText) {
+        text = replyText;
+        break;
+      }
+
+      // An empty reply: ask the model again once before giving up
+      emptyReplies += 1;
+      if (emptyReplies > 1) break;
+      await logger.log({ type: "retry", error: "The model returned an empty reply.", output: { attempt: emptyReplies } });
+      continue;
     }
 
     // The model wrote some words before choosing a tool: clear them from the screen

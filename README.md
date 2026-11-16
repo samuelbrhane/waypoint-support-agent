@@ -10,7 +10,7 @@ An AI support agent for Velmora Air. It looks up bookings, checks fare rules, pr
 
 The recording opens on the home page, runs three support chats, then reviews them on the Logs page.
 
-https://github.com/user-attachments/assets/PASTE-YOUR-VIDEO-ID
+[Watch the demo video](screenshots/waypoint-demo-small.mp4)
 
 | Chat with live trace | Conversation logs |
 |---|---|

@@ -69,8 +69,9 @@ body {
   }
 }
 
-/* Sections rise into view when they scroll on screen (see RevealOnScroll) */
-.reveal {
+/* Sections rise into view when they scroll on screen.
+   Only active once RevealOnScroll has started, so content is never hidden without it. */
+html[data-reveal="on"] .reveal {
   opacity: 0;
   transform: translateY(18px);
   transition:
@@ -78,7 +79,7 @@ body {
     transform 0.6s ease-out;
 }
 
-.reveal[data-visible="true"] {
+html[data-reveal="on"] .reveal[data-visible="true"] {
   opacity: 1;
   transform: none;
 }

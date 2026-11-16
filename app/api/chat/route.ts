@@ -5,6 +5,7 @@ import { addMessage, createConversation, getConversation } from "@/lib/agent/con
 import { runAgentTurn } from "@/lib/agent/loop";
 import type { ChatEvent } from "@/lib/chat-events";
 import { ensureVisitorData } from "@/lib/demo";
+import { checkMessageLimit } from "@/lib/limits";
 import { getOrCreateVisitorId } from "@/lib/visitor";
 
 export const maxDuration = 60;
@@ -22,6 +23,12 @@ export async function POST(request: Request) {
 
   const { message } = body.data;
   const visitorId = await getOrCreateVisitorId();
+
+  const limit = await checkMessageLimit(visitorId);
+  if (limit) {
+    return Response.json({ error: limit }, { status: 429 });
+  }
+
   await ensureVisitorData(visitorId);
 
   let conversationId = body.data.conversationId ?? null;

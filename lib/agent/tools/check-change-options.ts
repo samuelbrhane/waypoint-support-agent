@@ -75,8 +75,8 @@ export const checkChangeOptions = defineTool({
         change: {
           allowed: change.allowed,
           reason: change.reason,
-          fee: formatEuros(fee.cents),
-          fee_reason: fee.reason,
+          fee: change.allowed ? formatEuros(fee.cents) : null,
+          fee_reason: change.allowed ? fee.reason : null,
           alternatives,
         },
         refund: {

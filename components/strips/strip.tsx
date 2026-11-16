@@ -4,7 +4,7 @@ const TONES: Record<StripTone, { edge: string; label: string; surface: string }>
   decision: { edge: "bg-radar", label: "text-radar", surface: "bg-paper" },
   tool: { edge: "bg-slate", label: "text-slate", surface: "bg-paper" },
   result: { edge: "bg-line", label: "text-slate", surface: "bg-paper" },
-  waiting: { edge: "bg-taxi animate-taxi-pulse", label: "text-ink", surface: "bg-taxi-soft" },
+  waiting: { edge: "bg-taxi animate-taxi-pulse", label: "text-ink", surface: "bg-taxi-soft animate-taxi-glow" },
   done: { edge: "bg-go", label: "text-go", surface: "bg-paper" },
   escalation: { edge: "bg-ink", label: "text-ink", surface: "bg-paper" },
   error: { edge: "bg-stop", label: "text-stop", surface: "bg-paper" },

@@ -18,17 +18,7 @@
 
   --animate-strip-in: strip-in 0.45s ease-out both;
   --animate-taxi-pulse: taxi-pulse 1.8s ease-in-out infinite;
-}
-
-@keyframes strip-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  --animate-taxi-glow: taxi-glow 2s ease-out infinite;
 }
 
 body {
@@ -43,15 +33,19 @@ body {
   outline-offset: 2px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+/* Strips slide in one by one */
+@keyframes strip-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
+/* The yellow edge of a strip waiting for confirmation fades in and out */
 @keyframes taxi-pulse {
   0%,
   100% {
@@ -62,28 +56,47 @@ body {
   }
 }
 
-/* Sections rise into view while scrolling, in browsers that support scroll-driven animation */
-@keyframes reveal {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
+/* A soft yellow glow that grows and fades around a strip waiting for confirmation */
+@keyframes taxi-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgb(242 183 5 / 0.55);
   }
-  to {
-    opacity: 1;
-    transform: none;
+  70% {
+    box-shadow: 0 0 0 8px rgb(242 183 5 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(242 183 5 / 0);
   }
 }
 
-@supports (animation-timeline: view()) {
-  .reveal {
-    animation: reveal linear both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 45%;
-  }
+/* Sections rise into view when they scroll on screen (see RevealOnScroll) */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
+}
+
+.reveal[data-visible="true"] {
+  opacity: 1;
+  transform: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
   .flight-dot {
     display: none;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
   }
 }

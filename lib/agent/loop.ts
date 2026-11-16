@@ -83,9 +83,14 @@ export async function runAgentTurn({
 }: TurnOptions): Promise<AgentTurnResult> {
   const turn = await currentTurn(conversationId);
   const logger = new StepLogger(conversationId, turn, onStep);
-  const context = { visitorId, conversationId };
-
   const history = await loadHistory(conversationId);
+  const customerText = history
+    .filter((m) => m.role === "user")
+    .map((m) => m.content)
+    .join(" ")
+    .toUpperCase()
+    .replace(/\s+/g, "");
+  const context = { visitorId, conversationId, customerText };;
   const input: ResponseInputItem[] = history.map((m) => ({ role: m.role, content: m.content }));
 
   const pendingActionIds: string[] = [];

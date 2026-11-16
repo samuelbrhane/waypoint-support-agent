@@ -4,6 +4,8 @@ import type { z } from "zod";
 export type ToolContext = {
   visitorId: string;
   conversationId: string;
+  // Everything the customer has written, uppercase without spaces, to check booking references against
+  customerText?: string;
 };
 
 /** Every tool returns either data or an error the model can act on. */

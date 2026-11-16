@@ -21,7 +21,7 @@ export function LogsPreview() {
         </Link>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-line bg-paper">
+      <div className="reveal overflow-hidden rounded-xl border border-line bg-paper">
         <div className="grid grid-cols-[1fr_auto_auto] gap-4 border-b border-line px-4 py-2.5 text-xs text-slate">
           <span>Conversation</span>
           <span className="w-16 text-right">Steps</span>

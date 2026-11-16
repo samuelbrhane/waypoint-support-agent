@@ -28,7 +28,7 @@ export function Authority() {
         </h2>
         <div className="mt-10 grid gap-8 md:grid-cols-3">
           {LEVELS.map((level) => (
-            <div key={level.title} className={`border-t-4 pt-5 ${level.edge}`}>
+            <div key={level.title} className={`reveal border-t-4 pt-5 ${level.edge}`}>
               <h3 className="font-display text-2xl font-semibold">{level.title}</h3>
               <p className="mt-2 text-sm text-slate">{level.text}</p>
               <ul className="mt-4 space-y-2 text-sm">

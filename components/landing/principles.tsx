@@ -24,7 +24,7 @@ export function Principles() {
         <h2 className="max-w-2xl font-display text-4xl font-bold tracking-tight">Built to be trusted with real customers</h2>
         <dl className="mt-10 grid gap-x-12 gap-y-8 md:grid-cols-2">
           {PRINCIPLES.map((p) => (
-            <div key={p.title} className="border-l-2 border-line pl-5">
+            <div key={p.title} className="reveal border-l-2 border-line pl-5">
               <dt className="font-display text-2xl font-semibold">{p.title}</dt>
               <dd className="mt-2 leading-relaxed text-slate">{p.text}</dd>
             </div>

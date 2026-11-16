@@ -14,7 +14,7 @@ export function LogoMark({ size = 28 }: { size?: number }) {
 
 export function Logo({ withAirline = true }: LogoProps) {
   return (
-    <span className="flex items-center gap-2.5 text-ink">
+    <span className="flex items-center gap-2.5">
       <LogoMark />
       <span className="flex items-baseline gap-2">
         <span className="font-display text-2xl font-bold tracking-tight">Waypoint</span>

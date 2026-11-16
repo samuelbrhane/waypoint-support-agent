@@ -11,6 +11,9 @@
   --color-taxi-soft: #fff6d6;
   --color-go: #1f8a5b;
   --color-stop: #c8372d;
+  --color-night: #0f1e36;
+  --color-night-raised: #172b4b;
+  --color-glow: #8fb4ff;
 
   --font-display: var(--font-barlow-condensed), "Arial Narrow", sans-serif;
   --font-sans: var(--font-plex-sans), system-ui, sans-serif;

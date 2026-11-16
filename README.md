@@ -10,7 +10,7 @@ An AI support agent for Velmora Air. It looks up bookings, checks fare rules, pr
 
 The recording opens on the home page, runs three support chats, then reviews them on the Logs page.
 
-[Watch the demo video](screenshots/waypoint-demo-small.mp4)
+![Waypoint demo](screenshots/waypoint-demo.gif)
 
 | Chat with live trace | Conversation logs |
 |---|---|
@@ -40,19 +40,23 @@ Each visitor gets a private copy of six sample bookings, so anyone can try every
 ## How it works
 
 ```mermaid
+%%{init: {"theme": "base", "themeVariables": {"background": "#ffffff", "primaryColor": "#ffffff", "primaryTextColor": "#12223a", "primaryBorderColor": "#2f6fed", "lineColor": "#8a9bb0", "fontFamily": "Segoe UI, Arial, sans-serif"}}}%%
 flowchart LR
-    U[Customer] -->|message| C["/api/chat"]
-    C --> L[Agent loop]
-    L <-->|Responses API| O[OpenAI]
-    L --> T[Tools]
-    T --> R[Fare rules]
-    T --> D[(Postgres)]
-    T -->|change requested| P[Pending action]
-    P -->|card| U
-    U -->|Confirm| A["/api/actions/id"]
-    A --> D
-    L -->|each step| S[Agent steps log]
-    C -->|NDJSON stream| U
+    A["💬 Customer asks"] --> B["🔄 Agent loop<br/>OpenAI with function tools"]
+    B --> C["🛠️ Tools<br/>bookings in Postgres"]
+    C --> D["📏 Fare rules<br/>decided in code"]
+    D --> E["✅ Confirmation card<br/>customer clicks Confirm"]
+    E --> F["💾 Change applied<br/>row lock, runs once"]
+    B -.-> G["📋 Step log<br/>live trace and Logs page"]
+    C -.-> G
+    F -.-> G
+
+    classDef card fill:#ffffff,stroke:#2f6fed,stroke-width:1.5px,color:#12223a
+    classDef confirm fill:#fffaf0,stroke:#f2b705,stroke-width:2px,color:#12223a
+    classDef log fill:#f3f6f9,stroke:#9aa8b8,stroke-width:1.5px,color:#12223a
+    class A,B,C,D,F card
+    class E confirm
+    class G log
 ```
 
 **Agent loop.** A hand-written loop calls the model with function tools and runs at most eight model calls per message. Tool arguments are checked with Zod before anything runs. A tool returns either data or an error marked as retryable, and retryable errors are tried twice.

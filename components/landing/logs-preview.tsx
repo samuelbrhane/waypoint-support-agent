@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { GateDisplay } from "./gate-display";
+
 const ROWS = [
   { title: "Can I move my flight VM4821 to a later date?", outcome: "Resolved", tone: "text-go", steps: 11, tokens: "3,412" },
   { title: "I missed my connection on booking VM6012", outcome: "Handed to a person", tone: "text-ink", steps: 8, tokens: "2,276" },
@@ -21,24 +23,30 @@ export function LogsPreview() {
         </Link>
       </div>
 
-      <div className="reveal overflow-hidden rounded-xl border border-line bg-paper">
-        <div className="grid grid-cols-[1fr_auto_auto] gap-4 border-b border-line px-4 py-2.5 text-xs text-slate">
-          <span>Conversation</span>
-          <span className="w-16 text-right">Steps</span>
-          <span className="w-16 text-right">Tokens</span>
+      <div className="reveal space-y-4">
+        <GateDisplay />
+        <div className="overflow-hidden rounded-xl border border-line bg-paper">
+          <div className="grid grid-cols-[1fr_auto_auto] gap-4 border-b border-line px-4 py-2.5 text-xs text-slate">
+            <span>Conversation</span>
+            <span className="w-16 text-right">Steps</span>
+            <span className="w-16 text-right">Tokens</span>
+          </div>
+          <ul>
+            {ROWS.map((row) => (
+              <li
+                key={row.title}
+                className="grid grid-cols-[1fr_auto_auto] items-center gap-4 border-b border-line px-4 py-3 last:border-0"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-sm">{row.title}</span>
+                  <span className={`text-xs font-medium ${row.tone}`}>{row.outcome}</span>
+                </span>
+                <span className="w-16 text-right font-mono text-sm text-slate">{row.steps}</span>
+                <span className="w-16 text-right font-mono text-sm text-slate">{row.tokens}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-        <ul>
-          {ROWS.map((row) => (
-            <li key={row.title} className="grid grid-cols-[1fr_auto_auto] items-center gap-4 border-b border-line px-4 py-3 last:border-0">
-              <span className="min-w-0">
-                <span className="block truncate text-sm">{row.title}</span>
-                <span className={`text-xs font-medium ${row.tone}`}>{row.outcome}</span>
-              </span>
-              <span className="w-16 text-right font-mono text-sm text-slate">{row.steps}</span>
-              <span className="w-16 text-right font-mono text-sm text-slate">{row.tokens}</span>
-            </li>
-          ))}
-        </ul>
       </div>
     </section>
   );

@@ -1,4 +1,4 @@
-import type { StripProps, StripTone } from "@/components/strips";
+import type { StepIconName, StripProps } from "@/components/strips";
 import type { StepEvent } from "@/lib/chat-events";
 
 type Data = Record<string, any>;
@@ -52,6 +52,35 @@ function describeResult(tool: string, output: Data): string {
   }
 }
 
+const TOOL_ICONS: Record<string, StepIconName> = {
+  lookup_booking: "search",
+  check_change_options: "rules",
+  request_rebooking: "action",
+  request_refund: "action",
+  create_ticket: "person",
+};
+
+/** The icon shown in a step's node on the flight path. */
+export function iconFor(step: StepEvent): StepIconName {
+  if (step.error || step.type === "retry" || step.type === "tool_error") return "error";
+
+  switch (step.type) {
+    case "model_call":
+      return "think";
+    case "tool_call":
+    case "tool_result":
+      return TOOL_ICONS[step.toolName ?? ""] ?? "action";
+    case "confirmation_requested":
+      return "wait";
+    case "confirmation_resolved":
+      return (step.output as Data)?.ok ? "done" : "error";
+    case "escalation":
+      return "person";
+    default:
+      return "done";
+  }
+}
+
 /** Turn a logged agent step into a readable strip. */
 export function stepToStrip(step: StepEvent): StripProps {
   const input = (step.input ?? {}) as Data;
@@ -63,13 +92,9 @@ export function stepToStrip(step: StepEvent): StripProps {
       if (step.error) return { tone: "error", label: "Model error", title: step.error, meta: ms(step) };
       return {
         tone: "decision",
-        label: "Decides",
-        title:
-          output.decision === "use_tools"
-            ? `Use ${output.tools.join(", ")}`
-            : "Reply to the customer",
-        detail:
-          step.inputTokens != null ? `${step.inputTokens} tokens in, ${step.outputTokens} out` : undefined,
+        label: "Thinking",
+        title: output.decision === "use_tools" ? `Use ${output.tools.join(", ")}` : "Reply to the customer",
+        detail: step.inputTokens != null ? `${step.inputTokens} tokens in, ${step.outputTokens} out` : undefined,
         meta: ms(step),
       };
     case "tool_call":
@@ -79,14 +104,20 @@ export function stepToStrip(step: StepEvent): StripProps {
     case "tool_error":
       return { tone: "error", label: "Tool error", title: step.error ?? "The tool failed", meta: ms(step) };
     case "retry":
-      return { tone: "error", label: "Retrying", title: step.error ?? "Temporary failure", detail: `attempt ${output.attempt} failed`, meta: ms(step) };
+      return {
+        tone: "error",
+        label: "Retrying",
+        title: step.error ?? "Temporary failure",
+        detail: `attempt ${output.attempt} failed`,
+        meta: ms(step),
+      };
     case "confirmation_requested":
       return { tone: "waiting", label: "Waiting for confirmation", title: output.summary };
     case "confirmation_resolved":
       return output.ok
         ? {
             tone: input.decision === "confirm" ? "done" : "result",
-            label: input.decision === "confirm" ? "Confirmed" : "Cancelled",
+            label: input.decision === "confirm" ? "Confirmed by the customer" : "Cancelled by the customer",
             title: output.message,
           }
         : { tone: "error", label: "Could not complete", title: output.message };
@@ -102,9 +133,11 @@ export function stepToStrip(step: StepEvent): StripProps {
 // Results that the next strip already shows (the waiting card or the handoff)
 const COVERED_BY_NEXT_STRIP = new Set(["request_rebooking", "request_refund", "create_ticket"]);
 
+export type TraceItem = { key: number; strip: StripProps; icon: StepIconName };
+
 /** Build the compact trace: a tool call and its result share one strip. */
-export function buildTrace(steps: StepEvent[]): { key: number; strip: StripProps }[] {
-  const items: { key: number; strip: StripProps }[] = [];
+export function buildTrace(steps: StepEvent[]): TraceItem[] {
+  const items: TraceItem[] = [];
   const lastInput = new Map<string, Data>();
 
   for (const step of steps) {
@@ -123,6 +156,7 @@ export function buildTrace(steps: StepEvent[]): { key: number; strip: StripProps
       const ref = lastInput.get(tool)?.booking_ref;
       items.push({
         key: step.id,
+        icon: iconFor(step),
         strip: {
           ...stepToStrip(step),
           tone: step.type === "tool_error" ? "error" : "tool",
@@ -132,7 +166,7 @@ export function buildTrace(steps: StepEvent[]): { key: number; strip: StripProps
       continue;
     }
 
-    items.push({ key: step.id, strip: stepToStrip(step) });
+    items.push({ key: step.id, icon: iconFor(step), strip: stepToStrip(step) });
   }
 
   return items;

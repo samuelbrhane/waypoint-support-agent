@@ -1,3 +1,5 @@
+import { and, eq, max } from "drizzle-orm";
+
 import { db } from "@/lib/db";
 import { agentSteps, type StepType } from "@/lib/db/schema";
 
@@ -16,13 +18,16 @@ export type StepInput = {
 
 /** Saves each agent step in order and passes it to a listener, such as a stream. */
 export class StepLogger {
-  private position = 0;
+  private position: number;
 
   constructor(
     private readonly conversationId: string,
     private readonly turn: number,
     private readonly onStep?: (step: LoggedStep) => void,
-  ) {}
+    startPosition = 0,
+  ) {
+    this.position = startPosition;
+  }
 
   async log(step: StepInput): Promise<LoggedStep> {
     this.position += 1;
@@ -40,6 +45,15 @@ export class StepLogger {
     this.onStep?.(row);
     return row;
   }
+}
+
+/** The highest step position already logged for a turn, so new steps continue after it. */
+export async function lastPosition(conversationId: string, turn: number): Promise<number> {
+  const [row] = await db
+    .select({ value: max(agentSteps.position) })
+    .from(agentSteps)
+    .where(and(eq(agentSteps.conversationId, conversationId), eq(agentSteps.turn, turn)));
+  return row.value ?? 0;
 }
 
 /** Runs a function and measures how long it took. */

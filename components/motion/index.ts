@@ -1,0 +1,1 @@
+export { RevealOnScroll } from "./reveal-on-scroll";

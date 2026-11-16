@@ -7,6 +7,7 @@ import {
   SiteFooter,
   SiteHeader,
 } from "@/components/landing";
+import { RevealOnScroll } from "@/components/motion";
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
       <Principles />
       <ClosingCta />
       <SiteFooter />
+      <RevealOnScroll />
     </main>
   );
 }

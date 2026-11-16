@@ -12,8 +12,10 @@ import { RevealOnScroll } from "@/components/motion";
 export default function Home() {
   return (
     <main>
-      <SiteHeader />
-      <Hero />
+      <div className="bg-night text-paper">
+        <SiteHeader />
+        <Hero />
+      </div>
       <Authority />
       <LogsPreview />
       <Principles />

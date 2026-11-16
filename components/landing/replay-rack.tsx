@@ -22,8 +22,8 @@ const STEPS: { tone: StripTone; label: string; title: string; detail?: string; m
 
 export function ReplayRack() {
   return (
-    <figure className="rounded-xl border border-line bg-sky/60 p-4 sm:p-5">
-      <div className="mb-4 ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-sm bg-ink px-4 py-2.5 text-sm text-paper">
+    <figure className="rounded-xl border border-paper/10 bg-night-raised/70 p-4 backdrop-blur-sm sm:p-5">
+      <div className="mb-4 ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-sm bg-paper px-4 py-2.5 text-sm text-ink">
         Can I move my flight VM4821 to a later date?
       </div>
       <ol className="space-y-2">
@@ -33,7 +33,7 @@ export function ReplayRack() {
           </li>
         ))}
       </ol>
-      <figcaption className="mt-4 text-xs text-slate">
+      <figcaption className="mt-4 text-xs text-paper/55">
         Replay of a real Waypoint conversation. Each strip is one step the agent took.
       </figcaption>
     </figure>

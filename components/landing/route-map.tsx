@@ -24,6 +24,11 @@ const WAYPOINTS = [
   { x: 315, y: 118 },
 ];
 
+// A small airliner seen from above, nose pointing right
+const AIRCRAFT =
+  "M9 0 L5 -1.2 L1 -1.2 L-2 -7 L-4 -7 L-2.5 -1.2 L-6 -1.2 L-8 -3.5 L-9.5 -3.5 L-8.5 0 " +
+  "L-9.5 3.5 L-8 3.5 L-6 1.2 L-2.5 1.2 L-4 7 L-2 7 L1 1.2 L5 1.2 Z";
+
 function WaypointStar({ x, y }: { x: number; y: number }) {
   return (
     <path
@@ -38,25 +43,25 @@ export function RouteMap() {
     <svg
       viewBox="0 0 560 420"
       preserveAspectRatio="xMinYMid slice"
-      className="pointer-events-none absolute inset-0 -z-10 h-full w-full text-ink"
+      className="pointer-events-none absolute inset-0 -z-10 h-full w-full text-glow"
       aria-hidden="true"
     >
-      <g fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3 5" opacity="0.14">
+      <g fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3 5" opacity="0.28">
         {ROUTES.map((d) => (
           <path key={d} d={d} />
         ))}
       </g>
 
-      <path d={FLIGHT_PATH} fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.22" />
+      <path d={FLIGHT_PATH} fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.5" />
 
-      <g opacity="0.25">
+      <g opacity="0.45">
         {WAYPOINTS.map((w) => (
           <WaypointStar key={`${w.x}-${w.y}`} x={w.x} y={w.y} />
         ))}
       </g>
 
       {AIRPORTS.map((a) => (
-        <g key={a.code} opacity="0.4">
+        <g key={a.code} opacity="0.7">
           <circle cx={a.x} cy={a.y} r="3" fill="currentColor" />
           <text x={a.x + 8} y={a.y + 4} className="fill-current font-mono" fontSize="11">
             {a.code}
@@ -64,9 +69,10 @@ export function RouteMap() {
         </g>
       ))}
 
-      <circle r="4.5" fill="var(--color-taxi)" className="flight-dot">
-        <animateMotion dur="11s" repeatCount="indefinite" path={FLIGHT_PATH} />
-      </circle>
+      <g className="flight-dot">
+        <path d={AIRCRAFT} fill="var(--color-taxi)" />
+        <animateMotion dur="11s" repeatCount="indefinite" path={FLIGHT_PATH} rotate="auto" />
+      </g>
     </svg>
   );
 }

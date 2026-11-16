@@ -1,7 +1,6 @@
-import type { StripTone } from "@/components/strips";
+import type { StripProps, StripTone } from "@/components/strips";
 import type { StepEvent } from "@/lib/chat-events";
 
-type StripProps = { tone: StripTone; label: string; title: string; detail?: string; meta?: string };
 type Data = Record<string, any>;
 
 const OUTCOMES: Record<string, string> = {
@@ -98,4 +97,43 @@ export function stepToStrip(step: StepEvent): StripProps {
     default:
       return { tone: "result", label: step.type, title: "" };
   }
+}
+
+// Results that the next strip already shows (the waiting card or the handoff)
+const COVERED_BY_NEXT_STRIP = new Set(["request_rebooking", "request_refund", "create_ticket"]);
+
+/** Build the compact trace: a tool call and its result share one strip. */
+export function buildTrace(steps: StepEvent[]): { key: number; strip: StripProps }[] {
+  const items: { key: number; strip: StripProps }[] = [];
+  const lastInput = new Map<string, Data>();
+
+  for (const step of steps) {
+    const tool = step.toolName ?? "";
+
+    if (step.type === "tool_call") {
+      lastInput.set(tool, (step.input ?? {}) as Data);
+      continue;
+    }
+
+    if (step.type === "tool_result" && COVERED_BY_NEXT_STRIP.has(tool)) {
+      continue;
+    }
+
+    if (step.type === "tool_result" || step.type === "tool_error") {
+      const ref = lastInput.get(tool)?.booking_ref;
+      items.push({
+        key: step.id,
+        strip: {
+          ...stepToStrip(step),
+          tone: step.type === "tool_error" ? "error" : "tool",
+          label: ref ? `${tool} ${ref}` : tool,
+        },
+      });
+      continue;
+    }
+
+    items.push({ key: step.id, strip: stepToStrip(step) });
+  }
+
+  return items;
 }

@@ -1,1 +1,1 @@
-export { Strip, type StripTone } from "./strip";
+export { Strip, type StripProps, type StripTone } from "./strip";

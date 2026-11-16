@@ -10,27 +10,28 @@ const TONES: Record<StripTone, { edge: string; label: string; surface: string }>
   error: { edge: "bg-stop", label: "text-stop", surface: "bg-paper" },
 };
 
-type StripProps = {
+export type StripProps = {
   tone: StripTone;
   label: string;
   title: string;
   detail?: string;
   meta?: string;
+  compact?: boolean;
 };
 
-export function Strip({ tone, label, title, detail, meta }: StripProps) {
+export function Strip({ tone, label, title, detail, meta, compact = false }: StripProps) {
   const style = TONES[tone];
 
   return (
     <div className={`flex overflow-hidden rounded-md border border-line ${style.surface}`}>
-      <div className={`w-1.5 shrink-0 ${style.edge}`} />
-      <div className="min-w-0 flex-1 px-3 py-2">
+      <div className={`shrink-0 ${compact ? "w-1" : "w-1.5"} ${style.edge}`} />
+      <div className={`min-w-0 flex-1 ${compact ? "px-2.5 py-1.5" : "px-3 py-2"}`}>
         <div className="flex items-baseline justify-between gap-3">
-          <span className={`text-xs font-medium ${style.label}`}>{label}</span>
-          {meta && <span className="shrink-0 font-mono text-xs text-slate">{meta}</span>}
+          <span className={`truncate font-medium ${compact ? "text-[11px]" : "text-xs"} ${style.label}`}>{label}</span>
+          {meta && <span className="shrink-0 font-mono text-[11px] text-slate">{meta}</span>}
         </div>
-        <p className="text-sm text-ink">{title}</p>
-        {detail && <p className="mt-0.5 truncate font-mono text-xs text-slate">{detail}</p>}
+        <p className={compact ? "line-clamp-2 text-[13px] leading-snug text-ink" : "text-sm text-ink"}>{title}</p>
+        {detail && !compact && <p className="mt-0.5 truncate font-mono text-xs text-slate">{detail}</p>}
       </div>
     </div>
   );

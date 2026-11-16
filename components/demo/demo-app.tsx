@@ -25,7 +25,7 @@ export function DemoApp() {
   };
 
   return (
-    <div className="flex h-dvh flex-col">
+    <div className="flex h-dvh flex-col overflow-hidden">
       <header className="flex items-center justify-between bg-night px-5 py-3 text-paper">
         <Link href="/" aria-label="Waypoint home">
           <Logo />

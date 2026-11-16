@@ -27,10 +27,49 @@ type TurnOptions = {
   visitorId: string;
   conversationId: string;
   onStep?: (step: LoggedStep) => void;
+  onText?: (delta: string) => void;
+  onTextReset?: () => void;
 };
 
+/** Call the model with streaming, passing reply text on as it is written. */
+async function callModel(input: ResponseInputItem[], onText?: (delta: string) => void) {
+  const stream = await openai.responses.create({
+    model: CHAT_MODEL,
+    instructions: buildSystemPrompt(new Date()),
+    input,
+    tools: openAiTools,
+    parallel_tool_calls: false,
+    stream: true,
+  });
+
+  let finalResponse: OpenAI.Responses.Response | null = null;
+  let wroteText = false;
+
+  for await (const event of stream) {
+    if (event.type === "response.output_text.delta") {
+      wroteText = true;
+      onText?.(event.delta);
+    } else if (event.type === "response.completed") {
+      finalResponse = event.response;
+    } else if (event.type === "response.failed" || event.type === "error") {
+      throw new Error("The model call failed.");
+    }
+  }
+
+  if (!finalResponse) {
+    throw new Error("The model response did not complete.");
+  }
+  return { response: finalResponse, wroteText };
+}
+
 /** Answer the newest customer message: call the model, run its tools, repeat until it replies. */
-export async function runAgentTurn({ visitorId, conversationId, onStep }: TurnOptions): Promise<AgentTurnResult> {
+export async function runAgentTurn({
+  visitorId,
+  conversationId,
+  onStep,
+  onText,
+  onTextReset,
+}: TurnOptions): Promise<AgentTurnResult> {
   const turn = await currentTurn(conversationId);
   const logger = new StepLogger(conversationId, turn, onStep);
   const context = { visitorId, conversationId };
@@ -45,17 +84,12 @@ export async function runAgentTurn({ visitorId, conversationId, onStep }: TurnOp
 
   for (let call = 1; call <= MAX_MODEL_CALLS; call++) {
     let response: OpenAI.Responses.Response;
+    let wroteText: boolean;
+
     try {
-      const measured = await measure(() =>
-        openai.responses.create({
-          model: CHAT_MODEL,
-          instructions: buildSystemPrompt(new Date()),
-          input,
-          tools: openAiTools,
-          parallel_tool_calls: false,
-        }),
-      );
-      response = measured.result;
+      const measured = await measure(() => callModel(input, onText));
+      response = measured.result.response;
+      wroteText = measured.result.wroteText;
 
       const functionCalls = response.output.filter((item) => item.type === "function_call");
       await logger.log({
@@ -71,6 +105,7 @@ export async function runAgentTurn({ visitorId, conversationId, onStep }: TurnOp
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       await logger.log({ type: "model_call", error: message });
+      onTextReset?.();
       break;
     }
 
@@ -80,6 +115,11 @@ export async function runAgentTurn({ visitorId, conversationId, onStep }: TurnOp
     if (functionCalls.length === 0) {
       text = response.output_text.trim() || FALLBACK_TEXT;
       break;
+    }
+
+    // The model wrote some words before choosing a tool: clear them from the screen
+    if (wroteText) {
+      onTextReset?.();
     }
 
     // Keep the model's own output (including its tool requests) in the conversation

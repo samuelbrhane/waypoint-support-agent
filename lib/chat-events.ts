@@ -28,6 +28,8 @@ export type ActionCard = {
 export type ChatEvent =
   | { type: "conversation"; conversationId: string }
   | { type: "step"; step: StepEvent }
+  | { type: "text"; delta: string }
+  | { type: "text_reset" }
   | {
       type: "done";
       text: string;

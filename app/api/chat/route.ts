@@ -48,8 +48,9 @@ export async function POST(request: Request) {
           visitorId,
           conversationId,
           onStep: (step) => send({ type: "step", step: { ...step, createdAt: step.createdAt.toISOString() } }),
+          onText: (delta) => send({ type: "text", delta }),
+          onTextReset: () => send({ type: "text_reset" }),
         });
-
         send({
           type: "done",
           text: result.text,

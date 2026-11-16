@@ -19,15 +19,17 @@ type Props = {
 };
 
 export function ChatPanel({ messages, working, onSend, onResolve, onReset, refreshKey }: Props) {
-  const endRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Scroll only the message list to its newest message
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    const list = scrollRef.current;
+    if (list) list.scrollTo({ top: list.scrollHeight, behavior: "smooth" });
   }, [messages.length, working]);
 
   return (
-    <section className="flex min-h-0 flex-col">
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-8">
+    <section className="flex h-full min-h-0 flex-col">
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-8">
         <div className="mx-auto max-w-2xl space-y-5">
           {messages.length === 0 ? (
             <Welcome onAsk={onSend} onReset={onReset} refreshKey={refreshKey} />
@@ -43,11 +45,10 @@ export function ChatPanel({ messages, working, onSend, onResolve, onReset, refre
               Checking with Velmora Air…
             </div>
           )}
-          <div ref={endRef} />
         </div>
       </div>
 
-      <div className="border-t border-line bg-sky px-5 py-4 sm:px-8">
+      <div className="shrink-0 border-t border-line bg-sky px-5 py-4 sm:px-8">
         <div className="mx-auto max-w-2xl">
           <ChatInput disabled={working} onSend={onSend} />
         </div>

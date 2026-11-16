@@ -24,7 +24,10 @@ export function MessageBubble({ message, onResolve }: Props) {
         <LogoMark size={22} />
       </span>
       <div className="min-w-0 space-y-3">
-        <p className="whitespace-pre-wrap text-sm leading-relaxed">{formatAnswer(message.content)}</p>
+        <p className="whitespace-pre-wrap text-sm leading-relaxed">
+          {formatAnswer(message.content)}
+          {message.streaming && <span className="ml-0.5 inline-block h-4 w-1.5 animate-taxi-pulse bg-ink align-text-bottom" />}
+        </p>
         {message.cards?.map((card) => (
           <ActionCard key={card.id} card={card} onResolve={onResolve} />
         ))}

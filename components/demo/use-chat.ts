@@ -11,6 +11,7 @@ export type UiMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  streaming?: boolean;
   cards?: UiCard[];
   ticketNumber?: string | null;
 };
@@ -30,6 +31,16 @@ export function useChat() {
   const addMessage = (message: Omit<UiMessage, "id">) =>
     setMessages((previous) => [...previous, { ...message, id: newId() }]);
 
+  // Replace the reply that is being typed, or add a new one if there is none
+  const finishReply = (message: Omit<UiMessage, "id">) =>
+    setMessages((previous) => {
+      const last = previous.at(-1);
+      if (last?.streaming) {
+        return [...previous.slice(0, -1), { ...message, id: last.id }];
+      }
+      return [...previous, { ...message, id: newId() }];
+    });
+
   const handleEvent = (event: ChatEvent) => {
     switch (event.type) {
       case "conversation":
@@ -38,8 +49,20 @@ export function useChat() {
       case "step":
         setSteps((previous) => [...previous, event.step]);
         break;
+      case "text":
+        setMessages((previous) => {
+          const last = previous.at(-1);
+          if (last?.streaming) {
+            return [...previous.slice(0, -1), { ...last, content: last.content + event.delta }];
+          }
+          return [...previous, { id: newId(), role: "assistant", content: event.delta, streaming: true }];
+        });
+        break;
+      case "text_reset":
+        setMessages((previous) => (previous.at(-1)?.streaming ? previous.slice(0, -1) : previous));
+        break;
       case "done":
-        addMessage({
+        finishReply({
           role: "assistant",
           content: event.text,
           cards: event.cards.map((card) => ({ ...card, state: "open" })),
@@ -47,7 +70,7 @@ export function useChat() {
         });
         break;
       case "error":
-        addMessage({ role: "assistant", content: event.message });
+        finishReply({ role: "assistant", content: event.message });
         break;
     }
   };
@@ -91,7 +114,7 @@ export function useChat() {
           }
         }
       } catch {
-        addMessage({ role: "assistant", content: "The connection was lost. Please try again." });
+        finishReply({ role: "assistant", content: "The connection was lost. Please try again." });
       } finally {
         setStatus("idle");
       }

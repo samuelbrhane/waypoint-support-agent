@@ -37,7 +37,7 @@ export function ChatPanel({ messages, working, onSend, onResolve, onReset, refre
             messages.map((message) => <MessageBubble key={message.id} message={message} onResolve={onResolve} />)
           )}
 
-          {working && (
+          {working && !messages.at(-1)?.streaming && (
             <div className="flex items-center gap-3 text-sm text-slate">
               <span className="animate-taxi-pulse text-ink">
                 <LogoMark size={22} />

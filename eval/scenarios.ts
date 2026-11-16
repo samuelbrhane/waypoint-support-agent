@@ -4,6 +4,7 @@ export type Expectation = {
   card?: "rebook" | "refund" | "none";
   ticket?: boolean;
   retry?: boolean;
+  noSuccessfulLookup?: boolean; // no booking may be looked up successfully
   replyMentions?: string[]; // the reply must contain at least one of these
   outcome?: "resolved" | "open" | "clarification" | "escalated";
 };
@@ -18,7 +19,11 @@ export const SCENARIOS: Scenario[] = [
   {
     name: "Asks for a missing booking reference",
     messages: ["Where is my booking?"],
-    expect: { forbiddenTools: "all", outcome: "clarification" },
+    expect: {
+      noSuccessfulLookup: true,
+      forbiddenTools: ["request_rebooking", "request_refund", "create_ticket"],
+      outcome: "clarification",
+    },
   },
   {
     name: "Offers free rebooking options without acting",

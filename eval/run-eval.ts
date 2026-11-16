@@ -15,7 +15,15 @@ type Check = { name: string; passed: boolean; detail?: string };
 
 function checkScenario(
   expect: Expectation,
-  facts: { tools: string[]; cards: string[]; ticket: boolean; retry: boolean; reply: string; outcome: string },
+  facts: {
+    tools: string[];
+    successfulTools: string[];
+    cards: string[];
+    ticket: boolean;
+    retry: boolean;
+    reply: string;
+    outcome: string;
+  },
 ): Check[] {
   const checks: Check[] = [];
   // Curly and straight apostrophes count as the same, so "couldn’t" matches "couldn't"
@@ -41,6 +49,12 @@ function checkScenario(
   }
   if (expect.retry) {
     checks.push({ name: "retries the failed tool", passed: facts.retry });
+  }
+  if (expect.noSuccessfulLookup) {
+    checks.push({
+      name: "looks up no booking it was not given",
+      passed: !facts.successfulTools.includes("lookup_booking"),
+    });
   }
   if (expect.replyMentions) {
     checks.push({
@@ -92,6 +106,7 @@ async function main() {
 
     const checks = checkScenario(scenario.expect, {
       tools: lastSteps.filter((s) => s.type === "tool_call").map((s) => s.toolName!),
+      successfulTools: lastSteps.filter((s) => s.type === "tool_result").map((s) => s.toolName!),
       cards: cards.map((c) => c.action),
       ticket: result!.ticketNumber !== null,
       retry: lastSteps.some((s) => s.type === "retry"),

@@ -1,0 +1,1 @@
+export { Strip, type StripTone } from "./strip";

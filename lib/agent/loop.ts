@@ -31,6 +31,14 @@ type TurnOptions = {
   onTextReset?: () => void;
 };
 
+/** The reply text from a response, collected from its message items. */
+function outputText(response: OpenAI.Responses.Response): string {
+  return response.output
+    .flatMap((item) => (item.type === "message" ? item.content : []))
+    .map((part) => (part.type === "output_text" ? part.text : ""))
+    .join("");
+}
+
 /** Call the model with streaming, passing reply text on as it is written. */
 async function callModel(input: ResponseInputItem[], onText?: (delta: string) => void) {
   const stream = await openai.responses.create({
@@ -113,7 +121,7 @@ export async function runAgentTurn({
 
     // No tools requested: this is the final reply
     if (functionCalls.length === 0) {
-      text = response.output_text.trim() || FALLBACK_TEXT;
+      text = outputText(response).trim() || FALLBACK_TEXT;
       break;
     }
 

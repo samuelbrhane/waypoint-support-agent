@@ -74,6 +74,38 @@ const NODE: Record<StripTone, string> = {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+function StepItem({ step, lineContinues, animate }: { step: FlowStep; lineContinues: boolean; animate: boolean }) {
+  return (
+    <li className={`relative pb-2 pl-9 ${animate ? "animate-strip-in" : ""}`}>
+      {lineContinues && (
+        <span
+          className={`absolute left-[11px] top-6 h-full w-px origin-top bg-glow/40 ${animate ? "animate-line-grow" : ""}`}
+        />
+      )}
+      <span
+        className={`absolute left-0 top-1.5 flex h-6 w-6 items-center justify-center rounded-full ring-4 ring-night-raised ${NODE[step.tone]}`}
+      >
+        <StepIcon name={step.icon} />
+      </span>
+      <Strip tone={step.tone} label={step.label} title={step.title} meta={step.meta} compact />
+    </li>
+  );
+}
+
+function Reply({ text, typing }: { text: string; typing: boolean }) {
+  return (
+    <div className="mt-2 flex max-w-[92%] gap-2.5">
+      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-paper text-night">
+        <StepIcon name="think" />
+      </span>
+      <p className="rounded-2xl rounded-tl-sm bg-paper/10 px-4 py-2.5 text-sm text-paper">
+        {text}
+        {typing && <span className="ml-0.5 inline-block h-3.5 w-1.5 animate-taxi-pulse bg-paper align-text-bottom" />}
+      </p>
+    </div>
+  );
+}
+
 export function AgentFlow() {
   const [visible, setVisible] = useState(0);
   const [pending, setPending] = useState<string | null>(null);
@@ -127,48 +159,46 @@ export function AgentFlow() {
         Can I move my flight VM4821 to a later date?
       </div>
 
-      <ol className="min-h-[22rem]">
-        {shown.map((step, index) => {
-          const isLast = index === shown.length - 1;
-          const lineContinues = !isLast || pending !== null;
-
-          return (
-            <li key={index} className="relative animate-strip-in pb-2 pl-9">
-              {lineContinues && (
-                <span className="absolute left-[11px] top-6 h-full w-px origin-top animate-line-grow bg-glow/40" />
-              )}
-              <span
-                className={`absolute left-0 top-1.5 flex h-6 w-6 items-center justify-center rounded-full ring-4 ring-night-raised ${NODE[step.tone]}`}
-              >
-                <StepIcon name={step.icon} />
-              </span>
-              <Strip tone={step.tone} label={step.label} title={step.title} meta={step.meta} compact />
-            </li>
-          );
-        })}
-
-        {pending && (
-          <li className="relative animate-strip-in pl-9">
-            <span className="absolute left-0 top-0 flex h-6 w-6 items-center justify-center">
-              <span className="absolute h-full w-full animate-ping rounded-full bg-taxi opacity-60" />
-              <span className="relative h-3 w-3 rounded-full bg-taxi ring-4 ring-night-raised" />
-            </span>
-            <p className="pt-1 font-mono text-xs text-taxi">{pending}…</p>
-          </li>
-        )}
-      </ol>
-
-      {typed > 0 && (
-        <div className="mt-2 flex max-w-[92%] gap-2.5 animate-strip-in">
-          <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-paper text-night">
-            <StepIcon name="think" />
-          </span>
-          <p className="rounded-2xl rounded-tl-sm bg-paper/10 px-4 py-2.5 text-sm text-paper">
-            {REPLY.slice(0, typed)}
-            {typed < REPLY.length && <span className="ml-0.5 inline-block h-3.5 w-1.5 animate-taxi-pulse bg-paper align-text-bottom" />}
-          </p>
+      {/* Both layers share one grid cell: the invisible finished flow sets the height */}
+      <div className="grid">
+        <div aria-hidden="true" className="invisible col-start-1 row-start-1">
+          <ol>
+            {STEPS.map((step, index) => (
+              <StepItem key={index} step={step} lineContinues={index < STEPS.length - 1} animate={false} />
+            ))}
+          </ol>
+          <Reply text={REPLY} typing={false} />
         </div>
-      )}
+
+        <div className="col-start-1 row-start-1">
+          <ol>
+            {shown.map((step, index) => (
+              <StepItem
+                key={index}
+                step={step}
+                lineContinues={index < shown.length - 1 || pending !== null}
+                animate
+              />
+            ))}
+
+            {pending && (
+              <li className="relative animate-strip-in pl-9">
+                <span className="absolute left-0 top-0 flex h-6 w-6 items-center justify-center">
+                  <span className="absolute h-full w-full animate-ping rounded-full bg-taxi opacity-60" />
+                  <span className="relative h-3 w-3 rounded-full bg-taxi ring-4 ring-night-raised" />
+                </span>
+                <p className="pt-1 font-mono text-xs text-taxi">{pending}…</p>
+              </li>
+            )}
+          </ol>
+
+          {typed > 0 && (
+            <div className="animate-strip-in">
+              <Reply text={REPLY.slice(0, typed)} typing={typed < REPLY.length} />
+            </div>
+          )}
+        </div>
+      </div>
 
       <figcaption className="mt-4 text-xs text-paper/55">
         A real Waypoint flow: every step is a decision, a tool call, or a pause for the customer.
